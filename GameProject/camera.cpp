@@ -22,5 +22,5 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 void focus_camera_on(vec3 focus, int width, int height){
 	float FoV = initialFoV;
 	ProjectionMatrix = glm::perspective(FoV, (float)width/(float)height, 0.1f, 100.0f);
-	ViewMatrix       = glm::lookAt(focus + vec3(0, 10, -10), focus, vec3(0, 1.0, 0));
+	ViewMatrix       = glm::lookAt(focus + vec3(0, 15, -15), focus, vec3(0, 1.0, 0));
 }

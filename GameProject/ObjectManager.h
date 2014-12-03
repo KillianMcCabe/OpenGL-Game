@@ -11,10 +11,13 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include "wizard.h"
 #include "projectile.h"
 #include "tree.h"
 #include "crow.h"
+#include "venom.h"
 
+extern GLFWwindow* window;
 
 class ObjectManager
 {
@@ -25,8 +28,11 @@ class ObjectManager
         ObjectManager();
         ~ObjectManager();
 		void static addProjectile(Projectile p);
+		vec3 getPlayerPos();
+		void setPlayer(Wizard w);
 		void add(Tree t);
 		void add(Crow c);
+		void add(Venom v);
 		void update(float delta_time);
 		bool static collision(float x, float y, float z, float width, float height, float depth);
         void draw(glm::mat4 V, glm::mat4 P, glm::vec3 light);

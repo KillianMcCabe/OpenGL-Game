@@ -51,6 +51,15 @@ static const float depth = 1;
 
 ObjectManager objects = ObjectManager();
 
+Wizard::Wizard() {
+	//shader_programme = load_shaders("simple.vert", "simple.frag");
+	x = 0; y = 0; z = 0;
+	reload_time = 0;
+	facing_direction = vec3(0, 0, 1);
+	distance_moved = 0.0;
+	//init();
+}
+
 Wizard::Wizard(GLuint shader) {
 	shader_programme = shader;
 	x = 0; y = 0; z = 0;

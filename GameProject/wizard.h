@@ -27,6 +27,7 @@ class Wizard
 		static void init();
 	protected:
     public:
+		Wizard();
         Wizard(GLuint shader);
         ~Wizard();
 		glm::vec3 get_pos();

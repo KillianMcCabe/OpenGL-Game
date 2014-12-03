@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include "stb_image.h" // Sean Barrett's image loader
 #include "objloader.hpp"
+#include "utilities.h"
 
-static const float crow_speed = 4.0;
+static const float move_speed = 3.5;
 static const float crow_wing_speed = 2.0;
 
 static GLuint shader_programme;
@@ -27,9 +28,14 @@ const float Crow::width = 1.2;
 const float Crow::height = 0.5;
 const float Crow::depth = 1;
 
+
+
+
 Crow::Crow(GLuint shader, float _x, float _y, float _z) {
 	shader_programme = shader;
 	dead = false;
+	distance_moved = 0;
+	flying_dir = glm::vec3(rand_int(-1, 1), 0, rand_int(-1, 1));
 	x = _x;
 	y = _y;
 	z = _z;
@@ -40,8 +46,10 @@ Crow::~Crow() {
 
 }
 
+static bool initialised = false;
 void::Crow::init()
 {
+	if (initialised) return; // init once
 
 	// Load objects
 	std::vector<glm::vec3> vertices;
@@ -197,11 +205,47 @@ void::Crow::init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glEnable(GL_TEXTURE_2D);
+
+	initialised = true;
+}
+
+void::Crow::update(glm::vec3 target, float delta_time)
+{
+	//glm::vec3 turn_towards = target;
+	flying_dir = normalize(target - glm::vec3(x, y, z));
+
+	flying_dir.x = glm::round(flying_dir.x);
+	flying_dir.y = glm::round(flying_dir.y);
+	flying_dir.z = glm::round(flying_dir.z);
+
+	float dx = delta_time * move_speed * flying_dir.x;
+	float dz = delta_time * move_speed * flying_dir.z;
+	x += dx;
+	z += dz;
+
+	distance_moved += delta_time;
+
+	float crow_wing_angle = sin(z * crow_wing_speed) * 15;
+
+	// move body
+	crow_body_T = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
+	crow_body_R = glm::rotate(glm::mat4(1.0), float(atan2(-flying_dir.x, -flying_dir.z) * 180 / 3.14), glm::vec3(0, 1.0, 0));
+	crow_body_M = crow_body_T * crow_body_R;
+
+	// move left wing
+	crow_left_wing_local_T = glm::translate(glm::mat4(1.0), glm::vec3(std::max(crow_wing_angle/500*move_speed, 0.0f), 0.0, 0.0));
+	crow_left_wing_local_R = glm::rotate(glm::mat4(1.0), crow_wing_angle, glm::vec3(0.0, 0.0, 1.0));
+	crow_left_wing_M = crow_body_M * crow_left_wing_local_T * crow_left_wing_local_R;
+
+	// move right wing
+	crow_right_wing_local_T = glm::translate(glm::mat4(1.0), glm::vec3(std::min(-crow_wing_angle/500*move_speed, 0.0f), 0.0, 0.0));
+	crow_right_wing_local_R = glm::rotate(glm::mat4(1.0), -crow_wing_angle, glm::vec3(0.0, 0.0, 1.0));
+	crow_right_wing_M = crow_body_M * (crow_right_wing_local_T * crow_right_wing_local_R);
 }
 
 void::Crow::update(float delta_time)
 {
-	z += -float(delta_time * crow_speed);
+	z += -float(delta_time * move_speed);
 	if (z <= -20) {
 		z += 30;
 	}
@@ -212,12 +256,12 @@ void::Crow::update(float delta_time)
 	crow_body_M = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
 
 	// move left wing
-	crow_left_wing_local_T = glm::translate(glm::mat4(1.0), glm::vec3(std::max(crow_wing_angle/500*crow_speed, 0.0f), 0.0, 0.0));
+	crow_left_wing_local_T = glm::translate(glm::mat4(1.0), glm::vec3(std::max(crow_wing_angle/500*move_speed, 0.0f), 0.0, 0.0));
 	crow_left_wing_local_R = glm::rotate(glm::mat4(1.0), crow_wing_angle, glm::vec3(0.0, 0.0, 1.0));
 	crow_left_wing_M = crow_body_M * crow_left_wing_local_T * crow_left_wing_local_R;
 
 	// move right wing
-	crow_right_wing_local_T = glm::translate(glm::mat4(1.0), glm::vec3(std::min(-crow_wing_angle/500*crow_speed, 0.0f), 0.0, 0.0));
+	crow_right_wing_local_T = glm::translate(glm::mat4(1.0), glm::vec3(std::min(-crow_wing_angle/500*move_speed, 0.0f), 0.0, 0.0));
 	crow_right_wing_local_R = glm::rotate(glm::mat4(1.0), -crow_wing_angle, glm::vec3(0.0, 0.0, 1.0));
 	crow_right_wing_M = crow_body_M * (crow_right_wing_local_T * crow_right_wing_local_R);
 }

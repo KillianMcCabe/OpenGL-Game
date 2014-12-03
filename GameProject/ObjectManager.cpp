@@ -3,7 +3,11 @@
 
 static std::vector<Projectile> projectiles;
 static std::vector<Tree> trees;
+static std::vector<Venom> venoms;
 static std::vector<Crow> crows;
+
+static Wizard wizard;
+
 
 ObjectManager::ObjectManager() {
 
@@ -11,6 +15,14 @@ ObjectManager::ObjectManager() {
 
 ObjectManager::~ObjectManager() {
 
+}
+
+vec3 ObjectManager::getPlayerPos() {
+	return wizard.get_pos();
+}
+
+void ObjectManager::setPlayer(Wizard w) {
+	wizard = w;
 }
 
 void ObjectManager::addProjectile(Projectile p) {
@@ -23,6 +35,10 @@ void ObjectManager::add(Tree t) {
 
 void ObjectManager::add(Crow c) {
 	crows.push_back(c);
+}
+
+void ObjectManager::add(Venom v) {
+	venoms.push_back(v);
 }
 
 void ObjectManager::clean() {
@@ -45,16 +61,21 @@ void ObjectManager::clean() {
 }
 
 void ObjectManager::update(float delta_time) {
+	wizard.update(window, delta_time);
 	for (std::vector<Projectile>::iterator it = projectiles.begin(); it != projectiles.end(); ++it) {
 		it->update(delta_time);
 	}
 	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end(); ++it) {
-		it->update(delta_time);
+		it->update(wizard.get_pos(), delta_time);
+	}
+	for (std::vector<Venom>::iterator it = venoms.begin(); it != venoms.end(); ++it) {
+		it->update(wizard.get_pos(), delta_time);
 	}
 	clean();
 }
 
 void ObjectManager::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light) {
+	wizard.draw(V, P, light);
 	for (std::vector<Tree>::iterator it = trees.begin(); it != trees.end(); ++it) {
 		it->draw(V, P, light);
 	}
@@ -62,6 +83,9 @@ void ObjectManager::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light) {
 		it->draw(V, P, light);
 	}
 	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end(); ++it) {
+		it->draw(V, P, light);
+	}
+	for (std::vector<Venom>::iterator it = venoms.begin(); it != venoms.end(); ++it) {
 		it->draw(V, P, light);
 	}
 }

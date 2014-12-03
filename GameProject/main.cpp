@@ -21,6 +21,7 @@
 
 #include "wizard.h"
 #include "crow.h"
+#include "venom.h"
 #include "fountain.h"
 #include "tree.h"
 #include "projectile.h"
@@ -30,6 +31,8 @@
 const char* atlas_image = "freemono.png";
 const char* atlas_meta = "freemono.meta";
 
+GLFWwindow* window = NULL;
+
 //
 // dimensions of the window drawing surface
 int gl_width = 1024;
@@ -38,7 +41,6 @@ int gl_height = 768;
 using namespace glm;
 
 int main () {
-	GLFWwindow* window = NULL;
 	const GLubyte* renderer;
 	const GLubyte* version;
 
@@ -117,15 +119,19 @@ int main () {
 	objects.add(Tree(simple_shader_programme, 3.0, 0.0, 3.0));
 
 	// add crow
-	objects.add(Crow(simple_shader_programme, -3.0, 2.5, 5.0));
-	objects.add(Crow(simple_shader_programme, 3.0, 2.5, 5.0));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
 
-	// add venom to scene
-	Object venom = Object("assets/venom.obj", "assets/venom_tex.png");
+	objects.add(Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5)));
 
 	Wizard wizard = Wizard(simple_shader_programme);
+	objects.setPlayer(wizard);
+
 	Fountain fountain = Fountain();
-	//Crow crow1 = Crow(simple_shader_programme);
 
 	double lastTime = glfwGetTime();
 	double currentTime;
@@ -143,7 +149,7 @@ int main () {
 		currentTime = glfwGetTime();
 		float deltaTime = float(currentTime - lastTime);
 
-		focus_camera_on(wizard.get_pos(), gl_width, gl_height);
+		focus_camera_on(objects.getPlayerPos(), gl_width, gl_height);
 		V = getViewMatrix();
 		P = getProjectionMatrix();
 
@@ -154,22 +160,23 @@ int main () {
 		grass.draw(mat4(1.0), M_loc);
 
 
-		float venom_spin_speed = 10.0;
-		M = rotate(translate(mat4(1.0), vec3(8, 0, -7.0)), float(currentTime * venom_spin_speed), vec3(0, 1, 0)); 
-		venom.draw(M, M_loc);
+		//float venom_spin_speed = 10.0;
+		//M = rotate(translate(mat4(1.0), vec3(8, 0, -7.0)), float(currentTime * venom_spin_speed), vec3(0, 1, 0)); 
+		//venom.draw(M, M_loc);
 
-		lastTime = currentTime;
+		
 
-		wizard.update(window, deltaTime);
+		//wizard.update(window, deltaTime);
 		light_pos = wizard.getLanternPos();
 		glUniform3f(light_pos_loc, light_pos[0], light_pos[1], light_pos[2]);
-		wizard.draw(V, P, light_pos);
+		//wizard.draw(V, P, light_pos);
 
 		//fountain.draw(deltaTime, V, P, light_pos);
 
 		objects.update(deltaTime);
 		objects.draw(V, P, light_pos);
 
+		lastTime = currentTime;
 		/* this just updates window events and keyboard input events (not used yet) */
 		glfwPollEvents ();
 		/* swaps the buffer that we are drawing to, and the one currently displayed on the window */

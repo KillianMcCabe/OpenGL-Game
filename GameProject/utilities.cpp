@@ -3,6 +3,24 @@
 
 using namespace glm;
 
+
+glm::vec3 TransformDirection(glm::vec3 pDirection, glm::mat4 pMatrix){
+	glm::vec4 result = pMatrix * glm::vec4(pDirection, 0.0f);
+    return glm::vec3(result.x, result.y, result.z);
+}
+
+float RandomFloat(float a, float b) {
+    float random = ((float) rand()) / (float) RAND_MAX;
+    float diff = b - a;
+    float r = random * diff;
+    return a + r;
+}
+
+int rand_int(int min, int max) {
+	return rand()%(max-min)+min;
+}
+
+
 //
 // copy a shader from a plain text file into a character array
 bool parse_file_into_str (

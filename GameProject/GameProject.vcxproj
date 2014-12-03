@@ -76,6 +76,7 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="tree.h" />
     <ClInclude Include="utilities.h" />
+    <ClInclude Include="venom.h" />
     <ClInclude Include="wizard.h" />
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +98,7 @@
     <ClCompile Include="projectile.cpp" />
     <ClCompile Include="tree.cpp" />
     <ClCompile Include="utilities.cpp" />
+    <ClCompile Include="venom.cpp" />
     <ClCompile Include="wizard.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
