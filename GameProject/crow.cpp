@@ -211,21 +211,28 @@ void::Crow::init()
 
 void::Crow::update(glm::vec3 target, float delta_time)
 {
-	//glm::vec3 turn_towards = target;
-	flying_dir = normalize(target - glm::vec3(x, y, z));
+	if (dead) {
+		// reset position
+		x = rand_int(x, x+100);
+		z = rand_int(z, z+100);
+		dead = false;
+	} else {
+		//glm::vec3 turn_towards = target;
+		flying_dir = normalize(target - glm::vec3(x, y, z));
 
-	flying_dir.x = glm::round(flying_dir.x);
-	flying_dir.y = glm::round(flying_dir.y);
-	flying_dir.z = glm::round(flying_dir.z);
+		flying_dir.x = glm::round(flying_dir.x);
+		flying_dir.y = glm::round(flying_dir.y);
+		flying_dir.z = glm::round(flying_dir.z);
 
-	float dx = delta_time * move_speed * flying_dir.x;
-	float dz = delta_time * move_speed * flying_dir.z;
-	x += dx;
-	z += dz;
+		float dx = delta_time * move_speed * flying_dir.x;
+		float dz = delta_time * move_speed * flying_dir.z;
+		x += dx;
+		z += dz;
 
-	distance_moved += delta_time;
+		distance_moved += delta_time;
+	}
 
-	float crow_wing_angle = sin(z * crow_wing_speed) * 15;
+	float crow_wing_angle = sin(distance_moved * crow_wing_speed) * 15;
 
 	// move body
 	crow_body_T = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));

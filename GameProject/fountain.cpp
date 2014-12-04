@@ -409,4 +409,3 @@ void Fountain::draw(float delta, mat4 V, mat4 P, vec3 light_pos) {
 	glDeleteVertexArrays(1, &VertexArrayID);
 */
 }
-

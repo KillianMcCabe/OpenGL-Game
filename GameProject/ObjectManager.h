@@ -17,6 +17,7 @@
 #include "crow.h"
 #include "venom.h"
 
+
 extern GLFWwindow* window;
 
 class ObjectManager
@@ -25,6 +26,7 @@ class ObjectManager
 		void clean();
 	protected:
     public:
+		static int crow_shot_count;
         ObjectManager();
         ~ObjectManager();
 		void static addProjectile(Projectile p);

@@ -79,6 +79,7 @@ glm::vec3 Wizard::get_pos() {
 
 void Wizard::init()
 {
+
 	// Load objects
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
@@ -171,7 +172,27 @@ void::Wizard::update(GLFWwindow* window, float delta_time)
 
 	// fire projectile
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && reload_time <= 0){
-		ObjectManager::addProjectile(Projectile(shader_programme, x+staff_x_offset+facing_direction.x, y+staff_y_offset+facing_direction.y, z+staff_z_offset+facing_direction.z, facing_direction));
+		//ObjectManager::addProjectile(Projectile(shader_programme, x+staff_x_offset+facing_direction.x, y+staff_y_offset+facing_direction.y, z+staff_z_offset+facing_direction.z, facing_direction));
+		double mouse_x, mouse_y;
+		glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+		
+		vec3 screen_centre = vec3(gl_width/2, 0, gl_height/2-20);
+		vec3 mouse_click = vec3(mouse_x, 0, mouse_y);
+		vec3 towards_mouse_click = normalize(screen_centre - mouse_click);
+		
+		/*
+		int mouse_depth = 0;
+		glReadPixels(mouse_x, gl_height - mouse_y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &mouse_depth);
+
+		glm::vec4 viewport = glm::vec4(0, 0, gl_width, gl_height);
+		glm::vec3 wincoord = glm::vec3(mouse_x, mouse_y, mouse_depth);
+		glm::vec3 objcoord = glm::unProject(wincoord, V, P, viewport);
+		vec3 towards_mouse_click = normalize(objcoord - vec3(x, y, z));
+		*/
+
+		ObjectManager::addProjectile(Projectile(shader_programme, x+towards_mouse_click.x, y+staff_y_offset, z+towards_mouse_click.z, towards_mouse_click));
+
 		reload_time = fire_rate;
 	} else {
 		reload_time -= delta_time;

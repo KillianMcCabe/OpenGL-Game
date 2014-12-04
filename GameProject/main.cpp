@@ -12,8 +12,6 @@
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
-//#include "stb_image.h"
-//#include "obj_parser.h"
 #include "text.h"
 #include "object.h"
 #include "camera.hpp"
@@ -37,6 +35,8 @@ GLFWwindow* window = NULL;
 // dimensions of the window drawing surface
 int gl_width = 1024;
 int gl_height = 768;
+
+glm::mat4 P, V, M;
 
 using namespace glm;
 
@@ -107,8 +107,6 @@ int main () {
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
 	glDisable(GL_CULL_FACE);
 
-	glm::mat4 P, V, M;
-
 	ObjectManager objects = ObjectManager();
 
 	// add grass to scene
@@ -119,12 +117,12 @@ int main () {
 	objects.add(Tree(simple_shader_programme, 3.0, 0.0, 3.0));
 
 	// add crow
-	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
-	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
-	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
-	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
-	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
-	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(-100, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
+	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
 
 	objects.add(Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5)));
 
@@ -132,6 +130,18 @@ int main () {
 	objects.setPlayer(wizard);
 
 	Fountain fountain = Fountain();
+
+
+	assert (init_text_rendering (atlas_image, atlas_meta, gl_width, gl_height));
+	int crow_count_text_id = add_text (
+		"Crows shot: ",
+		-0.95f, -0.8f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
+
+	focus_camera_on(vec3(0, 0, 0), gl_width, gl_height);
+	V = getViewMatrix();
+	P = getProjectionMatrix();
+
 
 	double lastTime = glfwGetTime();
 	double currentTime;
@@ -143,8 +153,6 @@ int main () {
 
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 		glClearColor(0.5, 0.5, 0.5, 1);//gray color, same as fog color
-
-
 
 		currentTime = glfwGetTime();
 		float deltaTime = float(currentTime - lastTime);
@@ -175,6 +183,12 @@ int main () {
 
 		objects.update(deltaTime);
 		objects.draw(V, P, light_pos);
+
+
+		char tmp[256];
+		sprintf (tmp, "Crows shot: %d\n", ObjectManager::crow_shot_count);
+		update_text (crow_count_text_id, tmp);
+		draw_texts();
 
 		lastTime = currentTime;
 		/* this just updates window events and keyboard input events (not used yet) */

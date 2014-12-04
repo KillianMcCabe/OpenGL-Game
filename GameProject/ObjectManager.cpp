@@ -8,9 +8,10 @@ static std::vector<Crow> crows;
 
 static Wizard wizard;
 
+int ObjectManager::crow_shot_count = 0;
 
 ObjectManager::ObjectManager() {
-
+	
 }
 
 ObjectManager::~ObjectManager() {
@@ -50,6 +51,7 @@ void ObjectManager::clean() {
 			++it;
 		}
 	}
+	/*
 	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end();) {
 		if (it->dead && it != crows.end()) {
 			it->~Crow();
@@ -58,6 +60,7 @@ void ObjectManager::clean() {
 			++it;
 		}
 	}
+	*/
 }
 
 void ObjectManager::update(float delta_time) {
@@ -126,6 +129,7 @@ bool ObjectManager::collision(float x, float y, float z, float width, float heig
 				y_min < other_y_max && y_max > other_y_min &&
 				z_min < other_z_max && z_max > other_z_min ){
 			it->dead = true;
+			crow_shot_count++;
 			return true;
 		}
 	}

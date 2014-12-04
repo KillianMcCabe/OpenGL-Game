@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+extern int gl_width, gl_height;
+extern glm::mat4 V, P;
 
 class Wizard
 {
