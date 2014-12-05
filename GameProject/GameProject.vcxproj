@@ -84,6 +84,8 @@
     <None Include="fog_shader.frag" />
     <None Include="Particle.fragmentshader" />
     <None Include="Particle.vertexshader" />
+    <None Include="quad.frag" />
+    <None Include="quad.vert" />
     <None Include="simple.frag" />
     <None Include="simple.vert" />
     <None Include="fog_shader.vert" />

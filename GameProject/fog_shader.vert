@@ -13,9 +13,12 @@ out vec2 texture_coordinates;
 out vec3 vn_cameraspace;
 out vec3 light_dir_cameraspace;
 out vec3 eye_dir_cameraspace;
+out vec3 pos;
 
 void main () {
 	texture_coordinates = vec2(vt.x, vt.y); // invert
+
+	pos = (M * vec4(vp, 1)).xyz;
 
 	vec3 vp_cameraspace = (V * M * vec4(vp, 1.0)).xyz;
 	eye_dir_cameraspace = vec3(0,0,0) - vp_cameraspace;   // vector from vertex towards eye/camera

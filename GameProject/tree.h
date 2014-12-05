@@ -17,14 +17,15 @@ class Tree
 {
 	private:
 		mat4 M;
-
-		static void init();
 	protected:
     public:
 		float x, y, z;
 		static const float width;
 		static const float height;
 		static const float depth;
+		glm::vec3 get_pos();
+		static void init(GLuint shader);
+		Tree(float x, float y, float z);
         Tree(GLuint shader, float x, float y, float z);
         ~Tree();
         void draw(glm::mat4 V, glm::mat4 P, glm::vec3 light);

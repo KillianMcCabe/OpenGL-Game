@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <iostream>
 
+extern bool game_over;
 
 class Venom
 {
@@ -18,6 +19,7 @@ class Venom
 		glm::mat4 M;
 		glm::mat4 T, R;
 		glm::vec3 moving_dir;
+		float dead_time;
 		static void init();
 	protected:
     public:
@@ -25,8 +27,10 @@ class Venom
 		float x, y, z;
 		float distance_moved;
 		static const float width, height, depth;
+		Venom();
         Venom(GLuint shader, float x, float y, float z);
         ~Venom();
+		glm::vec3 get_pos();
 		void update(glm::vec3 target, float delta_time);
         void draw(glm::mat4 V, glm::mat4 P, glm::vec3 light);
 };

@@ -16,9 +16,11 @@
 #include "tree.h"
 #include "crow.h"
 #include "venom.h"
+#include "utilities.h"
 
 
 extern GLFWwindow* window;
+extern Venom venom;
 
 class ObjectManager
 {
@@ -31,10 +33,12 @@ class ObjectManager
         ~ObjectManager();
 		void static addProjectile(Projectile p);
 		vec3 getPlayerPos();
+		vec3 getLanternPos();
+		void generateTerrain();
 		void setPlayer(Wizard w);
 		void add(Tree t);
 		void add(Crow c);
-		void add(Venom v);
+		
 		void update(float delta_time);
 		bool static collision(float x, float y, float z, float width, float height, float depth);
         void draw(glm::mat4 V, glm::mat4 P, glm::vec3 light);

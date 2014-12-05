@@ -22,6 +22,16 @@ const float Tree::width = 1;
 const float Tree::height = 5;
 const float Tree::depth = 1;
 
+Tree::Tree(float _x, float _y, float _z) {
+	float r = rand()%360;
+	x = _x;
+	y = _y;
+	z = _z;
+	mat4 T = translate(mat4(), vec3(x, y, z));
+	mat4 R = rotate(mat4(), r, vec3(0, 1, 0));
+	M = T * R;
+}
+
 Tree::Tree(GLuint shader, float _x, float _y, float _z) {
 	shader_programme = shader;
 	float r = rand()%360;
@@ -31,18 +41,23 @@ Tree::Tree(GLuint shader, float _x, float _y, float _z) {
 	mat4 T = translate(mat4(), vec3(x, y, z));
 	mat4 R = rotate(mat4(), r, vec3(0, 1, 0));
 	M = T * R;
-	init();
+	init(shader);
 }
 
 Tree::~Tree() {
 
 }
 
-static bool initialised = false;
+glm::vec3 Tree::get_pos() {
+	return glm::vec3(x, y, z);
+}
 
-void::Tree::init()
+static bool initialised = false;
+void Tree::init(GLuint shader)
 {
 	if (initialised) return; // init once
+
+	shader_programme = shader;
 
 	// Load objects
 	std::vector<glm::vec3> vertices;
@@ -72,6 +87,7 @@ void::Tree::init()
 
 void Tree::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light_pos)
 {
+	//std::cout << "DRAW " << shader_programme << ", " << texture << ", " << vao << ", " << point_count << ".     " << x  << ", " << y << ", " << z << std::endl;
 	// draw body
 	glUseProgram (shader_programme);
 

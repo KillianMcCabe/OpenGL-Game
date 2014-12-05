@@ -29,7 +29,11 @@
 const char* atlas_image = "freemono.png";
 const char* atlas_meta = "freemono.meta";
 
+// Globals
 GLFWwindow* window = NULL;
+bool game_over = false;
+Venom venom;
+int crow_shot_count;
 
 //
 // dimensions of the window drawing surface
@@ -77,12 +81,12 @@ int main () {
 	printf ("Renderer: %s\n", renderer);
 	printf ("OpenGL version supported %s\n", version);
 
-	//
-	// Load simple shaders from files
-	// --------------------------------------------------------------------------
 	//GLuint simple_shader_programme = load_shaders("simple.vert", "simple.frag");
 	GLuint simple_shader_programme = load_shaders("fog_shader.vert", "fog_shader.frag");
+	GLuint quad_shader = load_shaders("quad.vert", "quad.frag");
 	
+	GLuint game_over_screen_texture = load_texture("assets/game_over_screen.jpg");
+
 	// Get uniform locations
 	int M_loc = glGetUniformLocation (simple_shader_programme, "M");
 	assert (M_loc > -1);
@@ -108,13 +112,16 @@ int main () {
 	glDisable(GL_CULL_FACE);
 
 	ObjectManager objects = ObjectManager();
+	Tree::init(simple_shader_programme);
+	objects.generateTerrain();
 
 	// add grass to scene
-	Object grass = Object("assets/grass.obj", "assets/grass_tex.png");
+	Object ground = Object("assets/ground.obj", "assets/grass_tex.png");
 
 	// add trees to scene
-	objects.add(Tree(simple_shader_programme, -3.0, 0.0, 3.0));
-	objects.add(Tree(simple_shader_programme, 3.0, 0.0, 3.0));
+	//objects.add(Tree(simple_shader_programme, -3.0, 0.0, 3.0));
+	//objects.add(Tree(simple_shader_programme, 3.0, 0.0, 3.0));
+	
 
 	// add crow
 	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
@@ -124,10 +131,12 @@ int main () {
 	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
 	objects.add(Crow(simple_shader_programme, rand_int(-100, 100), 2.5, rand_int(0, 100)));
 
-	objects.add(Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5)));
+	//objects.add(Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5)));
 
 	Wizard wizard = Wizard(simple_shader_programme);
 	objects.setPlayer(wizard);
+
+	venom = Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5));
 
 	Fountain fountain = Fountain();
 
@@ -137,10 +146,54 @@ int main () {
 		"Crows shot: ",
 		-0.95f, -0.8f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 
-
 	focus_camera_on(vec3(0, 0, 0), gl_width, gl_height);
 	V = getViewMatrix();
 	P = getProjectionMatrix();
+	
+	//
+	// create vao for rendering image
+	//
+	// The fullscreen quad's FBO
+	static const GLfloat g_quad_vertex_buffer_data[] = { 
+		-1.0f,  1.0f,  0.0f,
+	     1.0f, -1.0f,  0.0f,
+	    -1.0f, -1.0f,  0.0f,
+	  
+	    -1.0f,  1.0f,  0.0f,
+	     1.0f,  1.0f,  0.0f,
+	     1.0f, -1.0f,  0.0f
+	};
+
+	GLfloat tex_uvs[] = {
+		0.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f
+	};
+
+	GLuint quad_vertexbuffer;
+	GLuint uvs_vbo;
+	GLuint quad_vao;
+	glGenBuffers(1, &quad_vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+	glGenBuffers (1, &uvs_vbo);
+	glBindBuffer (GL_ARRAY_BUFFER, uvs_vbo);
+	glBufferData (GL_ARRAY_BUFFER, sizeof (tex_uvs), tex_uvs, GL_STATIC_DRAW);
+
+	glGenVertexArrays (1, &quad_vao);
+	glBindVertexArray (quad_vao);
+
+	glEnableVertexAttribArray (0);
+	glBindBuffer (GL_ARRAY_BUFFER, quad_vertexbuffer);
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray (1);
+	glBindBuffer (GL_ARRAY_BUFFER, uvs_vbo);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
 
 
 	double lastTime = glfwGetTime();
@@ -157,39 +210,60 @@ int main () {
 		currentTime = glfwGetTime();
 		float deltaTime = float(currentTime - lastTime);
 
-		focus_camera_on(objects.getPlayerPos(), gl_width, gl_height);
-		V = getViewMatrix();
-		P = getProjectionMatrix();
+		if (game_over) {
 
-		glUniformMatrix4fv (V_loc, 1, GL_FALSE, &V[0][0]);
-		glUniformMatrix4fv (P_loc, 1, GL_FALSE, &P[0][0]);
+			// Use our shader
+			glUseProgram(quad_shader);
 
-		glUseProgram (simple_shader_programme);
-		grass.draw(mat4(1.0), M_loc);
+			// Bind our texture textures
+			GLuint texLoc = glGetUniformLocation(quad_shader, "input_texture");
+			assert(texLoc != -1);
+			glUniform1i(texLoc, 0);
+
+			glActiveTexture(GL_TEXTURE0);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, game_over_screen_texture);
+
+			// select vao
+			glBindVertexArray (quad_vao);
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			if (glfwGetKey(window, GLFW_KEY_SPACE)== GLFW_PRESS) {
+				game_over = false;
+				venom = Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5));
+				wizard = Wizard(simple_shader_programme);
+				objects.setPlayer(wizard);
+				ObjectManager::crow_shot_count = 0;
+
+				//objects.refresh(); TODO
+			}
+			
+		} else {
+
+			focus_camera_on(objects.getPlayerPos(), gl_width, gl_height);
+			V = getViewMatrix();
+			P = getProjectionMatrix();
+
+			glUniformMatrix4fv (V_loc, 1, GL_FALSE, &V[0][0]);
+			glUniformMatrix4fv (P_loc, 1, GL_FALSE, &P[0][0]);
+
+			light_pos = objects.getLanternPos();
+			glUniform3f(light_pos_loc, light_pos[0], light_pos[1], light_pos[2]);
+
+			glUseProgram (simple_shader_programme);
+			ground.draw(mat4(1.0), M_loc);
+			//fountain.draw(deltaTime, V, P, light_pos);
+
+			objects.update(deltaTime);
+			objects.draw(V, P, light_pos);
 
 
-		//float venom_spin_speed = 10.0;
-		//M = rotate(translate(mat4(1.0), vec3(8, 0, -7.0)), float(currentTime * venom_spin_speed), vec3(0, 1, 0)); 
-		//venom.draw(M, M_loc);
-
-		
-
-		//wizard.update(window, deltaTime);
-		light_pos = wizard.getLanternPos();
-		glUniform3f(light_pos_loc, light_pos[0], light_pos[1], light_pos[2]);
-		//wizard.draw(V, P, light_pos);
-
-		//fountain.draw(deltaTime, V, P, light_pos);
-
-		objects.update(deltaTime);
-		objects.draw(V, P, light_pos);
-
-
-		char tmp[256];
-		sprintf (tmp, "Crows shot: %d\n", ObjectManager::crow_shot_count);
-		update_text (crow_count_text_id, tmp);
-		draw_texts();
-
+			char tmp[256];
+			sprintf (tmp, "Crows shot: %d\n", ObjectManager::crow_shot_count);
+			update_text (crow_count_text_id, tmp);
+			draw_texts();
+		}
 		lastTime = currentTime;
 		/* this just updates window events and keyboard input events (not used yet) */
 		glfwPollEvents ();

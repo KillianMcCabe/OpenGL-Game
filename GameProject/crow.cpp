@@ -7,8 +7,8 @@
 #include "objloader.hpp"
 #include "utilities.h"
 
-static const float move_speed = 3.5;
-static const float crow_wing_speed = 2.0;
+static const float move_speed = 4.5;
+static const float crow_wing_speed = 3.0;
 
 static GLuint shader_programme;
 static GLuint body_vao;
@@ -218,11 +218,14 @@ void::Crow::update(glm::vec3 target, float delta_time)
 		dead = false;
 	} else {
 		//glm::vec3 turn_towards = target;
-		flying_dir = normalize(target - glm::vec3(x, y, z));
+		vec3 new_flying_dir = target - glm::vec3(x, y, z);
+		float distance = sqrtf(dot(new_flying_dir, new_flying_dir));
+		if (distance < 3) {
+			venom.dead = true;
+		}
 
-		flying_dir.x = glm::round(flying_dir.x);
-		flying_dir.y = glm::round(flying_dir.y);
-		flying_dir.z = glm::round(flying_dir.z);
+		flying_dir = normalize(new_flying_dir);
+		
 
 		float dx = delta_time * move_speed * flying_dir.x;
 		float dz = delta_time * move_speed * flying_dir.z;

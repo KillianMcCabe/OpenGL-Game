@@ -3,7 +3,6 @@
 
 static std::vector<Projectile> projectiles;
 static std::vector<Tree> trees;
-static std::vector<Venom> venoms;
 static std::vector<Crow> crows;
 
 static Wizard wizard;
@@ -18,8 +17,28 @@ ObjectManager::~ObjectManager() {
 
 }
 
+void ObjectManager::generateTerrain() {
+	int tree_count = 0;
+
+	vec3 pos;
+	while (tree_count < 800) {
+		int x = RandomFloat(-100.0, 100.0);
+		int y = 0;
+		int z = RandomFloat(-100.0, 100.0);
+
+		pos = vec3(x, y, z);
+		add(Tree(x, y, z));
+		tree_count++;
+	}
+	
+}
+
 vec3 ObjectManager::getPlayerPos() {
 	return wizard.get_pos();
+}
+
+vec3 ObjectManager::getLanternPos() {
+	return wizard.getLanternPos();
 }
 
 void ObjectManager::setPlayer(Wizard w) {
@@ -38,9 +57,7 @@ void ObjectManager::add(Crow c) {
 	crows.push_back(c);
 }
 
-void ObjectManager::add(Venom v) {
-	venoms.push_back(v);
-}
+
 
 void ObjectManager::clean() {
 	for (std::vector<Projectile>::iterator it = projectiles.begin(); it != projectiles.end();) {
@@ -69,11 +86,9 @@ void ObjectManager::update(float delta_time) {
 		it->update(delta_time);
 	}
 	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end(); ++it) {
-		it->update(wizard.get_pos(), delta_time);
+		it->update(venom.get_pos(), delta_time);
 	}
-	for (std::vector<Venom>::iterator it = venoms.begin(); it != venoms.end(); ++it) {
-		it->update(wizard.get_pos(), delta_time);
-	}
+	venom.update(wizard.get_pos(), delta_time);
 	clean();
 }
 
@@ -88,9 +103,7 @@ void ObjectManager::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light) {
 	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end(); ++it) {
 		it->draw(V, P, light);
 	}
-	for (std::vector<Venom>::iterator it = venoms.begin(); it != venoms.end(); ++it) {
-		it->draw(V, P, light);
-	}
+	venom.draw(V, P, light);
 }
 
 bool ObjectManager::collision(float x, float y, float z, float width, float height, float depth) {
