@@ -34,6 +34,7 @@ Venom::Venom() {
 Venom::Venom(GLuint shader, float _x, float _y, float _z) {
 	shader_programme = shader;
 	dead = false;
+	home = false;
 	distance_moved = 0;
 	dead_time = 0;
 	moving_dir = glm::vec3(rand_int(-1, 1), 0, rand_int(-1, 1));
@@ -92,18 +93,29 @@ void Venom::init()
 void Venom::update(glm::vec3 target, float delta_time)
 {
 	if (dead) {
-		//R = glm::rotate(glm::mat4(1.0), float(atan2(moving_dir.x, moving_dir.z) * 180 / 3.14), glm::vec3(0, 1.0, 0));
 		T = glm::translate(glm::mat4(1.0), glm::vec3(x, y+0.5, z));
 		R = glm::rotate(glm::mat4(1.0), 90.0f, glm::vec3(x, 0.0, 0));
 		dead_time += delta_time;
 		if (dead_time >= 5.0) {
 			game_over = true;
 		}
+	} else if (home) {
 	} else {
+		vec3 house_pos = house.get_pos();
+		vec3 dif = house_pos - glm::vec3(x, y, z);
+		float distance = sqrtf(dot(dif, dif));
+		if (distance < 5) {
+			x = house_pos.x;
+			y = house_pos.y;
+			z = house_pos.z;
+			venom.home = true;
+			game_win = true;
+		}
+
 		moving_dir = normalize(target - glm::vec3(x, y, z));
 	
 		vec3 diff = target - vec3(x, y, z);
-			float distance = sqrtf(dot(diff, diff));
+			distance = sqrtf(dot(diff, diff));
 
 			if (distance >= follow_distance) {
 				float dx = delta_time * move_speed * moving_dir.x;
@@ -131,7 +143,7 @@ void Venom::update(glm::vec3 target, float delta_time)
 
 
 void Venom::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light_pos)
-{		
+{
 	// draw body
 	glUseProgram (shader_programme);
 

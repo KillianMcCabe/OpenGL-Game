@@ -1,0 +1,37 @@
+﻿Build started 05/12/2014 23:32:32.
+     1>Project "C:\Users\Killian\Desktop\Graphics\OpenGL-Game\GameProject\GameProject.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt camera.cpp crow.cpp house.cpp main.cpp object.cpp ObjectManager.cpp objloader.cpp fountain.cpp projectile.cpp text.cpp tree.cpp utilities.cpp venom.cpp wizard.cpp
+         camera.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\camera.hpp(5): fatal error C1083: Cannot open include file: 'GLFW/glfw3.h': No such file or directory
+         crow.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\crow.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         house.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\house.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         main.cpp
+     1>main.cpp(2): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         object.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\object.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         ObjectManager.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\ObjectManager.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         objloader.cpp
+     1>objloader.cpp(6): fatal error C1083: Cannot open include file: 'glm/glm.hpp': No such file or directory
+         fountain.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\fountain.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         projectile.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\projectile.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         text.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\text.h(23): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         tree.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\tree.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         utilities.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\utilities.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         venom.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\venom.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+         wizard.cpp
+     1>c:\users\killian\desktop\graphics\opengl-game\gameproject\wizard.h(4): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+     1>Done Building Project "C:\Users\Killian\Desktop\Graphics\OpenGL-Game\GameProject\GameProject.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:01.05

@@ -68,6 +68,7 @@
     <ClInclude Include="bbsimp.h" />
     <ClInclude Include="camera.hpp" />
     <ClInclude Include="crow.h" />
+    <ClInclude Include="house.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="objloader.hpp" />
@@ -93,6 +94,7 @@
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="crow.cpp" />
+    <ClCompile Include="house.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />

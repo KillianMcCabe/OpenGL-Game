@@ -156,16 +156,21 @@ void::Wizard::update(GLFWwindow* window, float delta_time)
 		moving_direction.x -= 1;
 	}
 
+
 	body_T = glm::translate(glm::mat4(), glm::vec3(x, y, z));
 	if (moving_direction.z != 0 || moving_direction.x != 0) { 
 		moving_direction = normalize(moving_direction);
 		float dz = delta_time * move_speed * moving_direction.z;
 		float dx = delta_time * move_speed * moving_direction.x;
 		if (!objects.collision(x+dx, y, z, width, height, depth)) {
-			x += dx;
+			if (x+dx < 85 && x+dx>-85) {
+				x += dx;
+			}
 		}
 		if (!objects.collision(x, y, z+dz, width, height, depth)) {
-			z += dz;
+			if (z+dx < 85 && z+dz>-85) {
+				z += dz;
+			}
 		}
 		body_R = glm::rotate(glm::mat4(1.0), float(atan2(moving_direction.x, moving_direction.z) * 180 / 3.14), glm::vec3(0, 1.0, 0));
 		facing_direction = moving_direction;

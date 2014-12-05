@@ -219,6 +219,11 @@ void::Crow::update(glm::vec3 target, float delta_time)
 	} else {
 		//glm::vec3 turn_towards = target;
 		vec3 new_flying_dir = target - glm::vec3(x, y, z);
+
+		if (venom.home) {
+			new_flying_dir = -new_flying_dir; // fly away from venom instead
+		}
+
 		float distance = sqrtf(dot(new_flying_dir, new_flying_dir));
 		if (distance < 3) {
 			venom.dead = true;

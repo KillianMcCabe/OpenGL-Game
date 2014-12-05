@@ -15,12 +15,15 @@
 #include "projectile.h"
 #include "tree.h"
 #include "crow.h"
+#include "house.h"
 #include "venom.h"
 #include "utilities.h"
 
 
 extern GLFWwindow* window;
+extern Wizard wizard;
 extern Venom venom;
+extern House house;
 
 class ObjectManager
 {
@@ -35,7 +38,6 @@ class ObjectManager
 		vec3 getPlayerPos();
 		vec3 getLanternPos();
 		void generateTerrain();
-		void setPlayer(Wizard w);
 		void add(Tree t);
 		void add(Crow c);
 		

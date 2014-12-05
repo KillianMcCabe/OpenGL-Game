@@ -22,6 +22,7 @@
 #include "venom.h"
 #include "fountain.h"
 #include "tree.h"
+#include "house.h"
 #include "projectile.h"
 #include "ObjectManager.h"
 
@@ -32,7 +33,10 @@ const char* atlas_meta = "freemono.meta";
 // Globals
 GLFWwindow* window = NULL;
 bool game_over = false;
+bool game_win = false;
+Wizard wizard;
 Venom venom;
+House house;
 int crow_shot_count;
 
 //
@@ -113,6 +117,7 @@ int main () {
 
 	ObjectManager objects = ObjectManager();
 	Tree::init(simple_shader_programme);
+	House::init(simple_shader_programme);
 	objects.generateTerrain();
 
 	// add grass to scene
@@ -133,8 +138,8 @@ int main () {
 
 	//objects.add(Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5)));
 
-	Wizard wizard = Wizard(simple_shader_programme);
-	objects.setPlayer(wizard);
+	wizard = Wizard(simple_shader_programme);
+	//objects.setPlayer(wizard);
 
 	venom = Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5));
 
@@ -145,6 +150,14 @@ int main () {
 	int crow_count_text_id = add_text (
 		"Crows shot: ",
 		-0.95f, -0.8f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	int leaving_area_text_id = add_text (
+		"",
+		-0.6f, 0.8f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	int venom_dead_text_id = add_text (
+		"",
+		-0.4f, 0.5f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	focus_camera_on(vec3(0, 0, 0), gl_width, gl_height);
 	V = getViewMatrix();
@@ -195,6 +208,8 @@ int main () {
 	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 
+	char tmp[256];
+	vec3 wiz_pos;
 
 	double lastTime = glfwGetTime();
 	double currentTime;
@@ -233,7 +248,6 @@ int main () {
 				game_over = false;
 				venom = Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5));
 				wizard = Wizard(simple_shader_programme);
-				objects.setPlayer(wizard);
 				ObjectManager::crow_shot_count = 0;
 
 				//objects.refresh(); TODO
@@ -258,8 +272,26 @@ int main () {
 			objects.update(deltaTime);
 			objects.draw(V, P, light_pos);
 
+			wiz_pos = wizard.get_pos();
+			if (wiz_pos.x > 80 || wiz_pos.x < -80 || wiz_pos.z > 80 || wiz_pos.z < -80) {
+				sprintf (tmp, "Warning: You are leaving the forest, turn back.");
+				update_text (leaving_area_text_id, tmp);
+			} else {
+				sprintf (tmp, "");
+				update_text (leaving_area_text_id, tmp);
+			}
 
-			char tmp[256];
+			if (venom.dead) {
+				sprintf (tmp, "Venom has fallen to the crows.");
+				update_text (venom_dead_text_id, tmp);
+			} else if (venom.home) {
+				sprintf (tmp, "Venom has safely made it home!");
+				update_text (venom_dead_text_id, tmp);
+			} else {
+				sprintf (tmp, "");
+				update_text (venom_dead_text_id, tmp);
+			}
+
 			sprintf (tmp, "Crows shot: %d\n", ObjectManager::crow_shot_count);
 			update_text (crow_count_text_id, tmp);
 			draw_texts();

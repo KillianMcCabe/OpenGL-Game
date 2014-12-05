@@ -11,7 +11,11 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include "house.h"
+
+extern House house;
 extern bool game_over;
+extern bool game_win;
 
 class Venom
 {
@@ -24,6 +28,7 @@ class Venom
 	protected:
     public:
 		bool dead;
+		bool home;
 		float x, y, z;
 		float distance_moved;
 		static const float width, height, depth;

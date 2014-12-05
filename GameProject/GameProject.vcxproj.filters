@@ -57,6 +57,9 @@
     <ClInclude Include="text.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="house.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Particle.fragmentshader">
@@ -122,6 +125,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="house.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -51,7 +51,8 @@ void main () {
 	dist = (gl_FragCoord.z / gl_FragCoord.w);
 
 	const float FogDensity = 0.05;
-	fogFactor = 1.0 /exp(dist * FogDensity);
+	//fogFactor = 1.0 /exp(dist * FogDensity);
+	fogFactor = 1.0 /exp( (dist * FogDensity)* (dist * FogDensity));
 	fogFactor = clamp( fogFactor, 0.0, 1.0 );
 	
 

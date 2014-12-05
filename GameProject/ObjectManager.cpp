@@ -5,8 +5,6 @@ static std::vector<Projectile> projectiles;
 static std::vector<Tree> trees;
 static std::vector<Crow> crows;
 
-static Wizard wizard;
-
 int ObjectManager::crow_shot_count = 0;
 
 ObjectManager::ObjectManager() {
@@ -19,16 +17,37 @@ ObjectManager::~ObjectManager() {
 
 void ObjectManager::generateTerrain() {
 	int tree_count = 0;
+	trees.clear();
 
-	vec3 pos;
+	int x = RandomFloat(-70.0, 70.0);
+	int y = 0;
+	int z = RandomFloat(-70.0, 70.0);
+	vec3 house_pos = vec3(x, y, z);
+
+	// find suitable house pos
+	while ((x < 10 && x > -10) && (z < 10 && z > -10)) {
+		x = RandomFloat(-100.0, 100.0);
+		y = 0;
+		z = RandomFloat(-100.0, 100.0);
+	}
+
+	house = House(x, y, z);
+
+
+	vec3 pos, diff;
 	while (tree_count < 800) {
-		int x = RandomFloat(-100.0, 100.0);
-		int y = 0;
-		int z = RandomFloat(-100.0, 100.0);
+		x = RandomFloat(-100.0, 100.0);
+		y = 0;
+		z = RandomFloat(-100.0, 100.0);
 
 		pos = vec3(x, y, z);
-		add(Tree(x, y, z));
-		tree_count++;
+		diff = house.get_pos() - pos;
+		float distance = sqrtf(dot(diff, diff));
+
+		if (distance > 6 && !((x < 7 && x > -7) && (z < 7 && z > -7))) {
+			add(Tree(x, y, z));
+			tree_count++;
+		}
 	}
 	
 }
@@ -39,10 +58,6 @@ vec3 ObjectManager::getPlayerPos() {
 
 vec3 ObjectManager::getLanternPos() {
 	return wizard.getLanternPos();
-}
-
-void ObjectManager::setPlayer(Wizard w) {
-	wizard = w;
 }
 
 void ObjectManager::addProjectile(Projectile p) {
@@ -94,6 +109,8 @@ void ObjectManager::update(float delta_time) {
 
 void ObjectManager::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light) {
 	wizard.draw(V, P, light);
+	house.draw(V, P, light);
+	venom.draw(V, P, light);
 	for (std::vector<Tree>::iterator it = trees.begin(); it != trees.end(); ++it) {
 		it->draw(V, P, light);
 	}
@@ -103,7 +120,6 @@ void ObjectManager::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light) {
 	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end(); ++it) {
 		it->draw(V, P, light);
 	}
-	venom.draw(V, P, light);
 }
 
 bool ObjectManager::collision(float x, float y, float z, float width, float height, float depth) {
@@ -145,6 +161,19 @@ bool ObjectManager::collision(float x, float y, float z, float width, float heig
 			crow_shot_count++;
 			return true;
 		}
+	}
+
+	other_x_min = house.x - house.width/2;
+	other_x_max = house.x + house.width/2;
+	other_y_min = house.y;
+	other_y_max = house.y + house.height;
+	other_z_min = house.z - house.depth/2;
+	other_z_max = house.z + house.depth/2;
+	if (x_min < other_x_max && x_max > other_x_min &&
+			y_min < other_y_max && y_max > other_y_min &&
+			z_min < other_z_max && z_max > other_z_min ){
+		house.dead = true;
+		return true;
 	}
 
 
