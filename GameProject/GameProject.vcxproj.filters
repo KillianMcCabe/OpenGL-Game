@@ -86,6 +86,12 @@
     <None Include="quad.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="fog_shader_to_texture.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="fog_shader_to_texture.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

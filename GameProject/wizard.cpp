@@ -10,6 +10,8 @@
 #include "ObjectManager.h"
 #include "projectile.h"
 
+#include <SFML/Audio.hpp>
+
 static GLuint shader_programme;
 static GLuint body_vao;
 static GLuint lantern_hand_vao;
@@ -29,6 +31,7 @@ static const float move_speed = 4.0;
 static const float turn_speed = 0.8;
 static const float fire_rate = 0.3;
 static const float lantern_bobble_speed = 8.0;
+static const float footstep_sound_rate = 0.4;
 
 // lantern offset from origin
 static const float lantern_x_offset = -0.5;
@@ -49,6 +52,10 @@ static const float width = 1;
 static const float height = 3;
 static const float depth = 1;
 
+static sf::SoundBuffer footstep_buffer;
+sf::Sound sound;
+float time_since_last_step = 0;
+
 ObjectManager objects = ObjectManager();
 
 Wizard::Wizard() {
@@ -57,6 +64,7 @@ Wizard::Wizard() {
 	reload_time = 0;
 	facing_direction = vec3(0, 0, 1);
 	distance_moved = 0.0;
+	time_since_last_step = 0.0;
 	//init();
 }
 
@@ -66,6 +74,7 @@ Wizard::Wizard(GLuint shader) {
 	reload_time = 0;
 	facing_direction = vec3(0, 0, 1);
 	distance_moved = 0.0;
+	time_since_last_step = 0.0;
 	init();
 }
 
@@ -81,6 +90,9 @@ static bool initialised = false;
 void Wizard::init()
 {
 	if (initialised) return; // init once
+
+	// load sound
+    if (!footstep_buffer.loadFromFile("assets/audio/footstep2.ogg")) assert(false);
 
 	// Load objects
 	std::vector<glm::vec3> vertices;
@@ -172,8 +184,14 @@ void::Wizard::update(GLFWwindow* window, float delta_time)
 				z += dz;
 			}
 		}
+		if (time_since_last_step > footstep_sound_rate) {
+			time_since_last_step -= footstep_sound_rate;
+			sound.setBuffer(footstep_buffer);
+			sound.play();
+		}
 		body_R = glm::rotate(glm::mat4(1.0), float(atan2(moving_direction.x, moving_direction.z) * 180 / 3.14), glm::vec3(0, 1.0, 0));
 		facing_direction = moving_direction;
+		time_since_last_step += delta_time;
 		distance_moved += delta_time;
 	} else {
 		distance_moved = 0;

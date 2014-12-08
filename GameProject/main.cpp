@@ -4,6 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -45,13 +48,27 @@ int gl_width = 1024;
 int gl_height = 768;
 
 glm::mat4 P, V, M;
+const float flash_rate = 0.35;
+const float flash_length = 0.1;
+float flash_time = 0.0;
 
 using namespace glm;
+
+#define MAIN_TITLE			"OpenGL 4.0 - Mountains demo"
 
 int main () {
 	const GLubyte* renderer;
 	const GLubyte* version;
 
+	sf::Music music;
+	if (!music.openFromFile("assets/audio/SpookyScarySkeletons.ogg"))
+		return -1; // error
+	music.setVolume(20);
+	bool music_playing = false;
+	double time_since_music_start = 0.0;
+	//music.play();
+
+	
 	//
 	// Start OpenGL using helper libraries
 	// --------------------------------------------------------------------------
@@ -86,7 +103,8 @@ int main () {
 	printf ("OpenGL version supported %s\n", version);
 
 	//GLuint simple_shader_programme = load_shaders("simple.vert", "simple.frag");
-	GLuint simple_shader_programme = load_shaders("fog_shader.vert", "fog_shader.frag");
+	//GLuint simple_shader_programme = load_shaders("fog_shader.vert", "fog_shader.frag");
+	GLuint simple_shader_programme = load_shaders("fog_shader_to_texture.vert", "fog_shader_to_texture.frag");
 	GLuint quad_shader = load_shaders("quad.vert", "quad.frag");
 	
 	GLuint game_over_screen_texture = load_texture("assets/game_over_screen.jpg");
@@ -101,6 +119,9 @@ int main () {
 	int light_pos_loc = glGetUniformLocation (simple_shader_programme, "light_pos");
 	assert (light_pos_loc > -1);
 
+	int effect_loc = glGetUniformLocation (quad_shader, "effect");
+	assert (effect_loc > -1);	
+
 	glUseProgram (simple_shader_programme);
 
 	// Pass light position to shader
@@ -111,9 +132,9 @@ int main () {
 	// Start rendering
 	// --------------------------------------------------------------------------
 	// tell GL to only draw onto a pixel if the fragment is closer to the viewer
-	glEnable (GL_DEPTH_TEST); // enable depth-testing
-	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
-	glDisable(GL_CULL_FACE);
+	//glEnable (GL_DEPTH_TEST); // enable depth-testing
+	//glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
+	//glDisable(GL_CULL_FACE);
 
 	ObjectManager objects = ObjectManager();
 	Tree::init(simple_shader_programme);
@@ -208,22 +229,87 @@ int main () {
 	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 
+	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+	GLuint FramebufferName = 0;
+	glGenFramebuffers(1, &FramebufferName);
+	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+	// ----------- Render to frame buffer start -------------------
+	//
+	GLuint renderedTexture;
+	glGenTextures(1, &renderedTexture);
+	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, gl_width, gl_height, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, gl_width, gl_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+	
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+
+	glDrawBuffer(GL_NONE);
+
+	// Always check that our framebuffer is ok
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return false;
+
+	// Set the list of draw buffers.
+	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+	// ----------- Render to frame buffer end -------------------
+
+	
+
 	char tmp[256];
 	vec3 wiz_pos;
 
 	double lastTime = glfwGetTime();
 	double currentTime;
 
+	float r, g, b;
+	bool sound_was_pressed = false;
+
 	while (!glfwWindowShouldClose (window)) {
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE)== GLFW_PRESS) {
+			music.stop();
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 
-		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-		glClearColor(0.5, 0.5, 0.5, 1);//gray color, same as fog color
+		
+		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE && sound_was_pressed) {
+			if (music_playing & time_since_music_start >0.5 ) {
+				music.stop();
+				music_playing = false;
+			} else {
+				music.play();
+				music_playing = true;
+				time_since_music_start = 0.0;
+			}
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
+			sound_was_pressed = true;
+		} else {
+			sound_was_pressed = false;
+		}
 
 		currentTime = glfwGetTime();
 		float deltaTime = float(currentTime - lastTime);
+
+		// Render to Framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+		glViewport(0,0,gl_width,gl_height);
+
+		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+		glClearColor(0.5, 0.5, 0.5, 1);//gray color, same as fog color
+		
 
 		if (game_over) {
 
@@ -234,6 +320,8 @@ int main () {
 			GLuint texLoc = glGetUniformLocation(quad_shader, "input_texture");
 			assert(texLoc != -1);
 			glUniform1i(texLoc, 0);
+
+			glUniform4f(effect_loc, 0.0, 0.0, 0.0, 0.0);
 
 			glActiveTexture(GL_TEXTURE0);
 			glEnable(GL_TEXTURE_2D);
@@ -250,7 +338,7 @@ int main () {
 				wizard = Wizard(simple_shader_programme);
 				ObjectManager::crow_shot_count = 0;
 
-				//objects.refresh(); TODO
+				objects.refresh();
 			}
 			
 		} else {
@@ -264,6 +352,8 @@ int main () {
 
 			light_pos = objects.getLanternPos();
 			glUniform3f(light_pos_loc, light_pos[0], light_pos[1], light_pos[2]);
+
+			
 
 			glUseProgram (simple_shader_programme);
 			ground.draw(mat4(1.0), M_loc);
@@ -295,13 +385,58 @@ int main () {
 			sprintf (tmp, "Crows shot: %d\n", ObjectManager::crow_shot_count);
 			update_text (crow_count_text_id, tmp);
 			draw_texts();
+
+			//if (glfwGetKey(window, GLFW_KEY_SPACE)== GLFW_PRESS) {
+			//	game_over = false;
+			//	venom = Venom(simple_shader_programme, rand_int(-5, 5), 0, rand_int(-5, 5));
+			//	wizard = Wizard(simple_shader_programme);
+			//	ObjectManager::crow_shot_count = 0;
+
+			//	//objects.refresh(); TODO
+			//}
+
 		}
+
+		// Render to window
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0,0,gl_width,gl_height); 
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(quad_shader);
+		GLuint texLoc = glGetUniformLocation(quad_shader, "input_texture");
+		assert(texLoc != -1);
+		glUniform1i(texLoc, 0);
+
+		if (music_playing) {
+			if (time_since_music_start > 7.5 && flash_time > flash_rate ) {
+				
+				glUniform4f(effect_loc, r, g, b, 0.0);
+				if (flash_time > flash_rate + flash_length) {
+					flash_time -= flash_rate + flash_length;
+				}
+			} else {
+				r = RandomFloat(0.0, 0.8);
+				g = RandomFloat(0.0, 0.8);
+				b = RandomFloat(0.0, 0.8);
+				glUniform4f(effect_loc, 0, 0, 0, 0.0);
+			}
+			flash_time += deltaTime;
+			time_since_music_start += deltaTime;
+		}
+
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, renderedTexture);
+		glBindVertexArray (quad_vao);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
 		lastTime = currentTime;
 		/* this just updates window events and keyboard input events (not used yet) */
 		glfwPollEvents ();
 		/* swaps the buffer that we are drawing to, and the one currently displayed on the window */
 		glfwSwapBuffers (window);
 	}
-
 	return 0;
 }

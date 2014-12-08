@@ -16,6 +16,7 @@ ObjectManager::~ObjectManager() {
 }
 
 void ObjectManager::generateTerrain() {
+	std::cout << "generating terrain" << std::endl;
 	int tree_count = 0;
 	trees.clear();
 
@@ -33,7 +34,7 @@ void ObjectManager::generateTerrain() {
 
 	house = House(x, y, z);
 
-
+	std::cout << "adding trees " << std::endl;
 	vec3 pos, diff;
 	while (tree_count < 800) {
 		x = RandomFloat(-100.0, 100.0);
@@ -49,7 +50,18 @@ void ObjectManager::generateTerrain() {
 			tree_count++;
 		}
 	}
-	
+	std::cout << "generated terrain" << std::endl;
+}
+
+void ObjectManager::refresh() {
+
+	std::cout << "refresh" << std::endl;
+	// kill the crows
+	for (std::vector<Crow>::iterator it = crows.begin(); it != crows.end(); ++it) {
+		it->dead = true;
+	}
+
+	generateTerrain();
 }
 
 vec3 ObjectManager::getPlayerPos() {

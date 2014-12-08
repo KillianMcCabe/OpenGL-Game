@@ -144,6 +144,7 @@ void Venom::update(glm::vec3 target, float delta_time)
 
 void Venom::draw(glm::mat4 V, glm::mat4 P, glm::vec3 light_pos)
 {
+
 	// draw body
 	glUseProgram (shader_programme);
 

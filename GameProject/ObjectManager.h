@@ -43,6 +43,7 @@ class ObjectManager
 		
 		void update(float delta_time);
 		bool static collision(float x, float y, float z, float width, float height, float depth);
+		void refresh();
         void draw(glm::mat4 V, glm::mat4 P, glm::vec3 light);
 };
 

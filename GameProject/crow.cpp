@@ -213,8 +213,8 @@ void::Crow::update(glm::vec3 target, float delta_time)
 {
 	if (dead) {
 		// reset position
-		x = rand_int(x, x+100);
-		z = rand_int(z, z+100);
+		x = rand_int(x-100, x+100);
+		z = rand_int(z-100, z+100);
 		dead = false;
 	} else {
 		//glm::vec3 turn_towards = target;
